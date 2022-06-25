@@ -1,7 +1,7 @@
 # database-backup-aws
 Automatic and adjustable backup of the database on AWS
 
-## Install requirements
+## Requirements
 ```bash
 # create virtual environment
 python3.9 -m venv .venv
