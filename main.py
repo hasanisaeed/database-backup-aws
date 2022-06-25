@@ -5,6 +5,7 @@ import datetime
 import subprocess
 import gzip
 import os
+from time import sleep
 import boto3
 
 
@@ -28,7 +29,6 @@ def upload_to_s3(file_full_path, dest_file, manager_config):
                               manager_config.get('AWS_BUCKET_PATH') + dest_file)
         os.remove(file_full_path)
     except boto3.exceptions.S3UploadFailedError as exc:
-        print(exc)
         exit(1)
 
 
@@ -63,7 +63,6 @@ def backup_postgres_db(host,container_name, database_name, port, user, password,
             f.write(process.stdout)
         return process.stdout 
     except Exception as e:
-            print(e)
             exit(1)
 
 
@@ -104,7 +103,7 @@ def main():
 
     timestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
-    filename = '-%s.dump' % timestr
+    filename = 'backup-%s-%s.dump' % (postgres_db, timestr)
     filename_compressed = '%s.gz' % filename
 
     local_storage_path = config.get('local_storage', 'path', fallback='./backups/')
@@ -127,30 +126,26 @@ def main():
     local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
 
     logger.info('Backing up %s database to %s' % (postgres_db, local_file_path))
-    print('Backing up %s database to %s' % (postgres_db, local_file_path))
+    
+    interval = config.get('project', 'interval')
 
-    result = backup_postgres_db(postgres_host,
-                                container_name,
-                                    postgres_db,
-                                    postgres_port,
-                                    postgres_user,
-                                    postgres_password,
-                                    local_file_path)
+    while True:
+        result = backup_postgres_db(postgres_host,
+                                    container_name,
+                                        postgres_db,
+                                        postgres_port,
+                                        postgres_user,
+                                        postgres_password,
+                                        local_file_path)
 
-    comp_file = compress_to_gz(local_file_path)
+        comp_file = compress_to_gz(local_file_path)
 
-    print('---------------------------------------')
-    print('------------ ','Please wait', ' ------------')
-    print('---------------------------------------')
-    logger.info('Uploading %s to MinIO S3...' % comp_file)
+        logger.info('Uploading %s to MinIO S3...' % comp_file)
 
-    upload_to_s3(comp_file, filename_compressed, manager_config)
+        upload_to_s3(comp_file, filename_compressed, manager_config)
 
-    logger.info("Uploaded to %s" % filename_compressed)
-
-    print('---------------------------------------')
-    print('--------- ','Successfully Done!', ' --------')
-    print('---------------------------------------')
+        logger.info("Uploaded to %s" % filename_compressed)
+        sleep(interval)
 
 if __name__ == '__main__':
     main()
