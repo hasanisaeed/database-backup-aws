@@ -42,7 +42,7 @@ def compress_to_gz(src_file):
     return gz_file
 
 
-def backup_postgres_db(host, database_name, port, user, password, dest_file):
+def backup_postgres_db(host,container_name, database_name, port, user, password, dest_file):
     """
     Backup from database
     """
@@ -52,7 +52,7 @@ def backup_postgres_db(host, database_name, port, user, password, dest_file):
                  'docker',
                  'exec',
                  '-it',
-                 'stocks_postgresql',
+                 container_name,
                  'pg_dump',
                  '--dbname=postgresql://%s:%s@%s:%s/%s' % (user, password, host, port, database_name),
                  '-Fc',
@@ -94,6 +94,7 @@ def main():
     config.read(args.configfile) 
 
     project_name = config.get('Project', 'project_name')
+    container_name = config.get('Project', 'container_name')
 
     postgres_host = config.get('postgresql', 'host')
     postgres_port = config.get('postgresql', 'port')
@@ -129,6 +130,7 @@ def main():
     print('Backing up %s database to %s' % (postgres_db, local_file_path))
 
     result = backup_postgres_db(postgres_host,
+                                container_name,
                                     postgres_db,
                                     postgres_port,
                                     postgres_user,
@@ -149,6 +151,6 @@ def main():
     print('---------------------------------------')
     print('--------- ','Successfully Done!', ' --------')
     print('---------------------------------------')
-    
+
 if __name__ == '__main__':
     main()
