@@ -1,0 +1,4 @@
+.venv
+backup
+*.pyc
+app.config
