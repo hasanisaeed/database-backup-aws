@@ -1,4 +1,3 @@
-import encodings
 import logging
 import argparse
 import configparser
@@ -64,39 +63,6 @@ def backup_from_database(host, database_name, port, user, password, dest_file):
     except Exception as e:
             exit(1)
 
-def restore_database(container_name, 
-                     postgres_host,
-                     dump_file,
-                     postgres_port,
-                     postgres_user,
-                     postgres_password,
-                     postgres_db
-                     ):
-    """Restore postgres db from a file."""
-    try:
-        subprocess_params = [
-            'pg_restore',
-            '--no-owner',
-            '--dbname=postgresql://{}:{}@{}:{}/{}'.format(postgres_user,
-                                                          postgres_password,
-                                                          postgres_host,
-                                                          postgres_port,
-                                                          postgres_db,
-                                                          )
-        ] 
-        subprocess_params.append('-backup-20220626-130418.dump.gz') 
-
-        process = subprocess.Popen(subprocess_params, stdout=subprocess.PIPE)
-        output = process.communicate()[0]
-
-        if int(process.returncode) != 0:
-            logging.error('Error: process.returncode')
-
-        return output
-    except Exception as e:
-        logging.error(">> Exception error")
-
-
 
 def main():
     # config logger
@@ -124,7 +90,6 @@ def main():
     config.read(args.configfile) 
 
     project_name = config.get('Project', 'project_name')
-    container_name = config.get('Project', 'container_name')
 
     postgres_host = config.get('postgresql', 'host')
     postgres_port = config.get('postgresql', 'port')
@@ -178,14 +143,5 @@ def main():
             logger.info("Uploaded to %s" % filename_compressed)
             sleep(interval)
 
-    if args.action == "restore":
-            result = restore_database(container_name,
-            postgres_host,
-                                         'backup/-backup-20220626-113445.dump',
-                                         postgres_port,
-                                         postgres_user,
-                                         postgres_password,
-                                         postgres_db
-                                         )
 if __name__ == '__main__':
     main()
