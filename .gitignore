@@ -1,4 +1,5 @@
 .venv
-backup
+backup/*.dump
+backup/*.gz
 *.pyc
 app.config
