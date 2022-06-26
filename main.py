@@ -1,3 +1,4 @@
+import encodings
 import logging
 import argparse
 import configparser
@@ -42,28 +43,58 @@ def compress_to_gz(src_file):
     return gz_file
 
 
-def backup_postgres_db(host,container_name, database_name, port, user, password, dest_file):
+def backup_from_database(host, database_name, port, user, password, dest_file):
     """
     Backup from database
     """
     try:
-        process = subprocess.run(
-                [        
-                 'docker',
-                 'exec',
-                 '-it',
-                 container_name,
+            process = subprocess.Popen(
+                [
                  'pg_dump',
-                 '--dbname=postgresql://%s:%s@%s:%s/%s' % (user, password, host, port, database_name),
+                 '--dbname=postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, database_name),
                  '-Fc',
+                 '-f', dest_file,
                  '-v'],
                 stdout=subprocess.PIPE
             )
-        with open(dest_file, 'wb') as f: 
-            f.write(process.stdout)
-        return process.stdout 
+            output = process.communicate()[0]
+            if int(process.returncode) != 0:
+                exit(1)
+            return output
     except Exception as e:
             exit(1)
+
+def restore_database(container_name, 
+                     postgres_host,
+                     dump_file,
+                     postgres_port,
+                     postgres_user,
+                     postgres_password,
+                     postgres_db
+                     ):
+    """Restore postgres db from a file."""
+    try:
+        subprocess_params = [
+            'pg_restore',
+            '--no-owner',
+            '--dbname=postgresql://{}:{}@{}:{}/{}'.format(postgres_user,
+                                                          postgres_password,
+                                                          postgres_host,
+                                                          postgres_port,
+                                                          postgres_db,
+                                                          )
+        ] 
+        subprocess_params.append('-backup-20220626-130418.dump.gz') 
+
+        process = subprocess.Popen(subprocess_params, stdout=subprocess.PIPE)
+        output = process.communicate()[0]
+
+        if int(process.returncode) != 0:
+            logging.error('Error: process.returncode')
+
+        return output
+    except Exception as e:
+        logging.error(">> Exception error")
 
 
 
@@ -79,7 +110,7 @@ def main():
     args_parser = argparse.ArgumentParser(description='Postgres database management')
     args_parser.add_argument("--action",
                              metavar="action",
-                             choices=['backup'],
+                             choices=['backup', 'restore'],
                              required=True)
 
     args_parser.add_argument("--configfile",
@@ -123,29 +154,38 @@ def main():
         'AWS_ENDPOINT' : aws_endpoint
     }
 
-    local_file_path = '%s-%s' % (manager_config.get('BACKUP_PATH'), filename)
+    local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
 
     logger.info('Backing up %s database to %s' % (postgres_db, local_file_path))
     
     interval = int(config.get('Project', 'interval'))
 
-    while True:
-        result = backup_postgres_db(postgres_host,
-                                    container_name,
+    if args.action == "backup":
+        while True:
+            result = backup_from_database(postgres_host, 
                                         postgres_db,
                                         postgres_port,
                                         postgres_user,
                                         postgres_password,
                                         local_file_path)
 
-        comp_file = compress_to_gz(local_file_path)
+            comp_file = compress_to_gz(local_file_path)
 
-        logger.info('Uploading %s to MinIO S3...' % comp_file)
+            logger.info('Uploading %s to MinIO S3...' % comp_file)
 
-        upload_to_s3(comp_file, filename_compressed, manager_config)
+            upload_to_s3(comp_file, filename_compressed, manager_config)
 
-        logger.info("Uploaded to %s" % filename_compressed)
-        sleep(interval)
+            logger.info("Uploaded to %s" % filename_compressed)
+            sleep(interval)
 
+    if args.action == "restore":
+            result = restore_database(container_name,
+            postgres_host,
+                                         'backup/-backup-20220626-113445.dump',
+                                         postgres_port,
+                                         postgres_user,
+                                         postgres_password,
+                                         postgres_db
+                                         )
 if __name__ == '__main__':
     main()
