@@ -29,14 +29,14 @@ pip install -r requirements.txt
 CONFIG_PATH=$(pwd)/app.config
 PYTHON_PATH=$(pwd)/.venv/bin/python3
 
-tee /etc/systemd/system/$PROJECT_NAME.socket <<< "
+tee /etc/systemd/system/$PROJECT_NAME.service <<< "
 [Unit]
 Description = Backup from databases 
 After = network.target
  
 [Service]
 Type = simple
-ExecStart = $PYTHON_PATH main.py --action backup --configfile $CONFIG_PATH
+ExecStart = $PYTHON_PATH $(pwd)/main.py --action backup --configfile $CONFIG_PATH
 Restart = on-failure # Restart when there are errors
  
 [Install]
