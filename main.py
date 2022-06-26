@@ -102,8 +102,6 @@ def main():
     filename = 'backup-%s.dump' % timestr
     filename_compressed = '%s.gz' % filename
 
-    local_storage_path = config.get('local_storage', 'path', fallback='./backups/')
-
     aws_bucket_name = config.get('S3', 'bucket_name')
     aws_key_id = config.get('S3', 'key_id')
     aws_access_key = config.get('S3', 'access_key')
@@ -113,7 +111,6 @@ def main():
         'AWS_BUCKET_NAME': aws_bucket_name,
         'AWS_BUCKET_PATH': '%s/%s'%(project_name, postgres_db),
         'BACKUP_PATH': '%s/backup/' % os.path.dirname(os.path.realpath(__file__)),
-        'LOCAL_BACKUP_PATH': local_storage_path,
         'AWS_KEY_ID': aws_key_id,
         'AWS_ACCESS_KEY': aws_access_key,
         'AWS_ENDPOINT' : aws_endpoint
