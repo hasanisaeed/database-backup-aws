@@ -147,7 +147,7 @@ def main():
     manager_config = {
         'AWS_BUCKET_NAME': aws_bucket_name,
         'AWS_BUCKET_PATH': '%s/%s'%(project_name, postgres_db),
-        'BACKUP_PATH': './backup/',
+        'BACKUP_PATH': '%s/backup/' % os.path.dirname(os.path.realpath(__file__)),
         'LOCAL_BACKUP_PATH': local_storage_path,
         'AWS_KEY_ID': aws_key_id,
         'AWS_ACCESS_KEY': aws_access_key,
