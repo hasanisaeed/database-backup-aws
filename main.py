@@ -5,7 +5,6 @@ import datetime
 import subprocess
 import gzip
 import os
-from time import sleep
 import boto3
 
 
@@ -47,21 +46,21 @@ def backup_from_database(host, database_name, port, user, password, dest_file):
     Backup from database
     """
     try:
-            process = subprocess.Popen(
-                [
-                 'pg_dump',
-                 '--dbname=postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, database_name),
-                 '-Fc',
-                 '-f', dest_file,
-                 '-v'],
-                stdout=subprocess.PIPE
-            )
-            output = process.communicate()[0]
-            if int(process.returncode) != 0:
-                exit(1)
-            return output
-    except Exception as e:
+        process = subprocess.Popen(
+            [
+                'pg_dump',
+                '--dbname=postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, database_name),
+                '-Fc',
+                '-f', dest_file,
+                '-v'],
+            stdout=subprocess.PIPE
+        )
+        output = process.communicate()[0]
+        if int(process.returncode) != 0:
             exit(1)
+        return output
+    except Exception as e:
+        exit(1)
 
 
 def main():
@@ -122,8 +121,6 @@ def main():
                                                     postgres_db,
                                                     local_file_path
                                                 ))
-    
-    interval = int(config.get('Project', 'interval'))
 
     if args.action == "backup": 
         result = backup_from_database(
