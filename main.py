@@ -118,27 +118,30 @@ def main():
 
     local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
 
-    logger.info('Backing up %s database to %s' % (postgres_db, local_file_path))
+    logger.info('Backing up %s database to %s' % (
+                                                    postgres_db,
+                                                    local_file_path
+                                                ))
     
     interval = int(config.get('Project', 'interval'))
 
-    if args.action == "backup":
-        while True:
-            result = backup_from_database(postgres_host, 
-                                        postgres_db,
-                                        postgres_port,
-                                        postgres_user,
-                                        postgres_password,
-                                        local_file_path)
+    if args.action == "backup": 
+        result = backup_from_database(
+                                    postgres_host, 
+                                    postgres_db,
+                                    postgres_port,
+                                    postgres_user,
+                                    postgres_password,
+                                    local_file_path
+                                    )
 
-            comp_file = compress_to_gz(local_file_path)
+        comp_file = compress_to_gz(local_file_path)
 
-            logger.info('Uploading %s to MinIO S3...' % comp_file)
+        logger.info('Uploading %s to MinIO S3...' % comp_file)
 
-            upload_to_s3(comp_file, filename_compressed, manager_config)
+        upload_to_s3(comp_file, filename_compressed, manager_config)
 
-            logger.info("Uploaded to %s" % filename_compressed)
-            sleep(interval)
+        logger.info("Uploaded to %s" % filename_compressed)
 
 if __name__ == '__main__':
     main()
