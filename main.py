@@ -103,7 +103,7 @@ def main():
 
     timestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
-    filename = 'backup-%s-%s.dump' % (postgres_db, timestr)
+    filename = 'backup-%s.dump' % timestr
     filename_compressed = '%s.gz' % filename
 
     local_storage_path = config.get('local_storage', 'path', fallback='./backups/')
@@ -123,11 +123,11 @@ def main():
         'AWS_ENDPOINT' : aws_endpoint
     }
 
-    local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
+    local_file_path = '%s-%s' % (manager_config.get('BACKUP_PATH'), filename)
 
     logger.info('Backing up %s database to %s' % (postgres_db, local_file_path))
     
-    interval = config.get('project', 'interval')
+    interval = int(config.get('Project', 'interval'))
 
     while True:
         result = backup_postgres_db(postgres_host,
