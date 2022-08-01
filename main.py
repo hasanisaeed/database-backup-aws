@@ -91,6 +91,8 @@ def main():
 
     project_name = config.get('Project', 'project_name')
 
+    backup_path = config.get('Project', 'backup_path')
+
     postgres_host = config.get('postgresql', 'host')
     postgres_port = config.get('postgresql', 'port')
     postgres_dbs = json.loads(config.get('postgresql', 'db'))
@@ -118,7 +120,7 @@ def main():
         manager_config = {
             'AWS_BUCKET_NAME': aws_bucket_name,
             'AWS_BUCKET_PATH': '%s/%s'%(project_name, postgres_db),
-            'BACKUP_PATH': '%s/backup/' % os.path.dirname(os.path.realpath(__file__)),
+            'BACKUP_PATH': backup_path,
             'AWS_KEY_ID': aws_key_id,
             'AWS_ACCESS_KEY': aws_access_key,
             'AWS_ENDPOINT' : aws_endpoint
