@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.2](https://github.com/realsaeedhassani/database-backup-aws/compare/v1.1.1...v1.1.2) (2022-08-01)
+
+
+### Bug Fixes
+
+* len of password added ([77de290](https://github.com/realsaeedhassani/database-backup-aws/commit/77de29030cf90341a3ffc4597e29b0b28d56ff8f))
+
 ### [1.1.1](https://github.com/realsaeedhassani/database-backup-aws/compare/v1.1.0...v1.1.1) (2022-08-01)
 
 
