@@ -96,8 +96,8 @@ def main():
     postgres_dbs = json.loads(config.get('postgresql', 'db'))
     postgres_users = json.loads(config.get('postgresql', 'user'))
     postgres_passwords = json.loads(config.get('postgresql', 'password'))
-    
-    assert len(postgres_dbs) != len(postgres_users) != postgres_passwords , \
+
+    assert len(postgres_dbs) == len(postgres_users) == len(postgres_passwords) , \
            'Length of databases and users and passwords must be the same.'
 
     for i in range(len(postgres_dbs)):
