@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/realsaeedhassani/database-backup-aws/compare/v1.1.0...v1.1.1) (2022-08-01)
+
+
+### Bug Fixes
+
+* check length of lists in config filel ([c71dfc9](https://github.com/realsaeedhassani/database-backup-aws/commit/c71dfc99da46b37e7134696b6e1e684475ed8636))
+
 ## 1.1.0 (2022-08-01)
 
 
