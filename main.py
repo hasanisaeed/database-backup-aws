@@ -6,6 +6,7 @@ import subprocess
 import gzip
 import os
 import boto3
+import json
 
 
 def upload_to_s3(file_full_path, dest_file, manager_config):
@@ -92,53 +93,61 @@ def main():
 
     postgres_host = config.get('postgresql', 'host')
     postgres_port = config.get('postgresql', 'port')
-    postgres_db = config.get('postgresql', 'db')
-    postgres_user = config.get('postgresql', 'user')
-    postgres_password = config.get('postgresql', 'password')
+    postgres_dbs = json.loads(config.get('postgresql', 'db'))
+    postgres_users = json.loads(config.get('postgresql', 'user'))
+    postgres_passwords = json.loads(config.get('postgresql', 'password'))
+    
+    assert len(postgres_dbs) == len(postgres_users) == postgres_passwords , \
+           'Length of databases and users and passwords must be the same.'
+           
+    for i in range(len(postgres_dbs)):
+        timestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        
+        postgres_db = postgres_dbs[i]
+        postgres_user = postgres_users[i]
+        postgres_password = postgres_passwords[i]
 
-    timestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        filename = '%s-backup-%s.dump' % (postgres_db, timestr)
+        filename_compressed = '%s.gz' % filename
 
-    filename = 'backup-%s.dump' % timestr
-    filename_compressed = '%s.gz' % filename
+        aws_bucket_name = config.get('S3', 'bucket_name')
+        aws_key_id = config.get('S3', 'key_id')
+        aws_access_key = config.get('S3', 'access_key')
+        aws_endpoint = config.get('S3', 'endpoint')
 
-    aws_bucket_name = config.get('S3', 'bucket_name')
-    aws_key_id = config.get('S3', 'key_id')
-    aws_access_key = config.get('S3', 'access_key')
-    aws_endpoint = config.get('S3', 'endpoint')
+        manager_config = {
+            'AWS_BUCKET_NAME': aws_bucket_name,
+            'AWS_BUCKET_PATH': '%s/%s'%(project_name, postgres_db),
+            'BACKUP_PATH': '%s/backup/' % os.path.dirname(os.path.realpath(__file__)),
+            'AWS_KEY_ID': aws_key_id,
+            'AWS_ACCESS_KEY': aws_access_key,
+            'AWS_ENDPOINT' : aws_endpoint
+        }
 
-    manager_config = {
-        'AWS_BUCKET_NAME': aws_bucket_name,
-        'AWS_BUCKET_PATH': '%s/%s'%(project_name, postgres_db),
-        'BACKUP_PATH': '%s/backup/' % os.path.dirname(os.path.realpath(__file__)),
-        'AWS_KEY_ID': aws_key_id,
-        'AWS_ACCESS_KEY': aws_access_key,
-        'AWS_ENDPOINT' : aws_endpoint
-    }
+        local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
 
-    local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
+        logger.info('Backing up %s database to %s' % (
+                                                        postgres_db,
+                                                        local_file_path
+                                                    ))
 
-    logger.info('Backing up %s database to %s' % (
-                                                    postgres_db,
-                                                    local_file_path
-                                                ))
+        if args.action == "backup": 
+            result = backup_from_database(
+                                        postgres_host, 
+                                        postgres_db,
+                                        postgres_port,
+                                        postgres_user,
+                                        postgres_password,
+                                        local_file_path
+                                        )
 
-    if args.action == "backup": 
-        result = backup_from_database(
-                                    postgres_host, 
-                                    postgres_db,
-                                    postgres_port,
-                                    postgres_user,
-                                    postgres_password,
-                                    local_file_path
-                                    )
+            comp_file = compress_to_gz(local_file_path)
 
-        comp_file = compress_to_gz(local_file_path)
+            logger.info('Uploading %s to MinIO S3...' % comp_file)
 
-        logger.info('Uploading %s to MinIO S3...' % comp_file)
+            upload_to_s3(comp_file, filename_compressed, manager_config)
 
-        upload_to_s3(comp_file, filename_compressed, manager_config)
-
-        logger.info("Uploaded to %s" % filename_compressed)
+            logger.info("Uploaded to %s" % filename_compressed)
 
 if __name__ == '__main__':
     main()
