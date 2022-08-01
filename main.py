@@ -49,6 +49,10 @@ def backup_from_database(host, database_name, port, user, password, dest_file):
     try:
         process = subprocess.Popen(
             [
+                'docker',
+                'exec',
+                '-it', 
+                'stocks-db',
                 'pg_dump',
                 '--dbname=postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, database_name),
                 '-Fc',
