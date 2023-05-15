@@ -1,6 +1,6 @@
 import boto3
 
-from transfer.base import FileSender
+from transfer.by.base import FileSender
 
 
 class Boto3FileSender(FileSender):

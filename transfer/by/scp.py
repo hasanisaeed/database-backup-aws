@@ -1,4 +1,4 @@
-from transfer.base import FileSender
+from transfer.by.base import FileSender
 import subprocess
 from typing import Dict, Union, List
 
