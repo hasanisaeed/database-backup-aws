@@ -11,7 +11,7 @@ class PostgresBackup(DBBackup):
 
     def backup(self, backup_file_path: str, output_format: str = 'gz') -> None:
         backup_strategy = self._get_backup_strategy(output_format)
-        command = backup_strategy.get_backup_command(backup_file_path)
+        command = backup_strategy.build_backup_command(backup_file_path)
         self._execute_command(command)
         print("PostgreSQL database backup successful!")
 
@@ -36,7 +36,7 @@ class _BackupStrategy:
     def __init__(self, connection: PostgresConnection):
         self.connection = connection
 
-    def get_backup_command(self, backup_file_path: str) -> list:
+    def build_backup_command(self, backup_file_path: str) -> list:
         raise NotImplementedError
 
 
@@ -44,7 +44,7 @@ class _GzBackupStrategy(_BackupStrategy):
     def __init__(self, connection: PostgresConnection):
         super().__init__(connection)
 
-    def get_backup_command(self, backup_file_path: str) -> list:
+    def build_backup_command(self, backup_file_path: str) -> list:
         command = [
             'pg_dump',
             '-h', self.connection.host,
@@ -59,7 +59,7 @@ class _GzBackupStrategy(_BackupStrategy):
 
 
 class _SqlBackupStrategy(_BackupStrategy):
-    def get_backup_command(self, backup_file_path: str) -> list:
+    def build_backup_command(self, backup_file_path: str) -> list:
         return [
             'pg_dump',
             '-h', self.connection.host,
