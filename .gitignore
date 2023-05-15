@@ -1,5 +1,12 @@
+# Virtual Environment
 .venv
+venv
+
 backup/*.dump
 backup/*.gz
 *.pyc
 app.config
+
+# IDE
+.idea
+.vscode
