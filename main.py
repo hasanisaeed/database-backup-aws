@@ -51,7 +51,7 @@ def backup_from_database(host, database_name, port, user, password, dest_file):
             [
                 'docker',
                 'exec',
-                '-it', 
+                '-it',
                 'stocks-db',
                 'pg_dump',
                 '--dbname=postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, database_name),
@@ -87,11 +87,10 @@ def main():
                              required=True,
                              help="Database configuration file")
 
-
     args = args_parser.parse_args()
 
     config = configparser.ConfigParser()
-    config.read(args.configfile) 
+    config.read(args.configfile)
 
     project_name = config.get('Project', 'project_name')
 
@@ -103,12 +102,12 @@ def main():
     postgres_users = json.loads(config.get('postgresql', 'user'))
     postgres_passwords = json.loads(config.get('postgresql', 'password'))
 
-    assert len(postgres_dbs) == len(postgres_users) == len(postgres_passwords) , \
-           'Length of databases and users and passwords must be the same.'
+    assert len(postgres_dbs) == len(postgres_users) == len(postgres_passwords), \
+        'Length of databases and users and passwords must be the same.'
 
     for i in range(len(postgres_dbs)):
         timestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-        
+
         postgres_db = postgres_dbs[i]
         postgres_user = postgres_users[i]
         postgres_password = postgres_passwords[i]
@@ -123,29 +122,29 @@ def main():
 
         manager_config = {
             'AWS_BUCKET_NAME': aws_bucket_name,
-            'AWS_BUCKET_PATH': '%s/%s'%(project_name, postgres_db),
+            'AWS_BUCKET_PATH': '%s/%s' % (project_name, postgres_db),
             'BACKUP_PATH': backup_path,
             'AWS_KEY_ID': aws_key_id,
             'AWS_ACCESS_KEY': aws_access_key,
-            'AWS_ENDPOINT' : aws_endpoint
+            'AWS_ENDPOINT': aws_endpoint
         }
 
         local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
 
         logger.info('Backing up %s database to %s' % (
-                                                        postgres_db,
-                                                        local_file_path
-                                                    ))
+            postgres_db,
+            local_file_path
+        ))
 
-        if args.action == "backup": 
+        if args.action == "backup":
             result = backup_from_database(
-                                        postgres_host, 
-                                        postgres_db,
-                                        postgres_port,
-                                        postgres_user,
-                                        postgres_password,
-                                        local_file_path
-                                        )
+                postgres_host,
+                postgres_db,
+                postgres_port,
+                postgres_user,
+                postgres_password,
+                local_file_path
+            )
 
             comp_file = compress_to_gz(local_file_path)
 
@@ -154,6 +153,7 @@ def main():
             upload_to_s3(comp_file, filename_compressed, manager_config)
 
             logger.info("Uploaded to %s" % filename_compressed)
+
 
 if __name__ == '__main__':
     main()
