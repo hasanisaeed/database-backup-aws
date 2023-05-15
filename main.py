@@ -1,17 +1,16 @@
 import argparse
 from subprocess import CalledProcessError
+from datetime import datetime
+import configparser
 
 from backups.mysql import MySQLBackup
 from backups.postgres import PostgresBackup
 from connections.mysql import MySQLConnection
 from connections.postgres import PostgresConnection
-from datetime import datetime
-import configparser
-
 from transfer.factory import FileSenderFactory
 
-if __name__ == '__main__':
-    # Parse command-line arguments
+
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config-file', default='config.ini', required=False, help='Specify the config.ini file')
     parser.add_argument('--database', choices=['postgres', 'mysql', 'sqlite'], required=True,
@@ -21,45 +20,73 @@ if __name__ == '__main__':
     parser.add_argument('--remove-after-sending', required=False,
                         help='Remove temp file after sending by scp or boto3')
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    # Read the configuration file
+
+def read_config(config_file):
     config = configparser.ConfigParser()
-    config.read('config2.ini')
+    config.read(config_file)
+    return config
 
-    # Select the database section based on the command-line argument
+
+def get_connection(database, db_config):
+    if database == 'postgres':
+        return PostgresConnection(db_config)
+    elif database == 'mysql':
+        return MySQLConnection(db_config)
+    else:
+        raise ValueError(f'Invalid database type: {database}')
+
+
+def get_backup(database, connection):
+    if database == 'postgres':
+        return PostgresBackup(connection)
+    elif database == 'mysql':
+        return MySQLBackup(connection)
+    else:
+        raise ValueError(f'Invalid database type: {database}')
+
+
+def perform_backup(backup, backup_file_path, output_format):
+    backup.backup(backup_file_path, output_format)
+
+
+def send_backup(file_sender, backup_file_path):
+    try:
+        file_sender.send_file(backup_file_path)
+    except CalledProcessError:
+        print("The file was not sent")
+
+
+def remove_backup_file(backup_file_path):
+    try:
+        import os
+        os.remove(backup_file_path)
+        print(f"Temp file '{backup_file_path}' deleted successfully.")
+    except OSError as e:
+        print(f"Error deleting file '{backup_file_path}': {e}")
+
+
+if __name__ == '__main__':
+    args = parse_arguments()
+
+    config = read_config(args.config_file)
+
     database_section = args.database
 
     if database_section not in config.sections():
         raise ValueError(f'{database_section} section not found in config.')
 
-    # Extract the configuration for the selected database
     db_config = dict(config[database_section])
 
-    # Create a database connection object using the configuration
-    if args.database == 'postgres':
-        connection = PostgresConnection(db_config)
-    elif args.database == 'mysql':
-        connection = MySQLConnection(db_config)
-    else:
-        raise ValueError(f'Invalid database type: {args.database}')
+    connection = get_connection(args.database, db_config)
+    backup = get_backup(args.database, connection)
 
-    # Create a backup object for the selected database
-    if args.database == 'postgres':
-        backup = PostgresBackup(connection)
-    elif args.database == 'mysql':
-        backup = MySQLBackup(connection)
-    else:
-        raise ValueError(f'Invalid database type: {args.database}')
-
-    # Specify the backup file path and output format
     output_format = args.output_format
     backup_file_path = f"./backup_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}"
 
-    # Perform the backup
-    backup.backup(backup_file_path, output_format)
+    perform_backup(backup, backup_file_path, output_format)
 
-    # Send the backup file using the selected method
     sender_type = args.send_via
 
     if sender_type not in config.sections():
@@ -67,19 +94,8 @@ if __name__ == '__main__':
 
     sender_config = dict(config[sender_type])
     file_sender = FileSenderFactory.create_file_sender(sender_type, sender_config)
-    try:
-        file_sender.send_file(backup_file_path)
-    except CalledProcessError:
-        print("The file was not sent")
+    send_backup(file_sender, backup_file_path)
 
-    remove_after_sending = True
-    if args.remove_after_sending == "false":
-        remove_after_sending = False
-
+    remove_after_sending = args.remove_after_sending.lower() == "true"
     if remove_after_sending:
-        try:
-            import os
-            os.remove(backup_file_path)
-            print(f"File '{backup_file_path}' deleted successfully.")
-        except OSError as e:
-            print(f"Error deleting file '{backup_file_path}': {e}")
+        remove_backup_file(backup_file_path)
