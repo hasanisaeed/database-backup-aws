@@ -36,8 +36,14 @@ class _BackupStrategy:
 
 
 class _GzBackupStrategy(_BackupStrategy):
+    def __init__(self, connection: PostgresConnection, docker_container: str = 'postgres'):
+        super().__init__(connection)
+
+        if docker_container:
+            self.docker_container = docker_container
+
     def get_backup_command(self, backup_file_path: str) -> list:
-        return [
+        command = [
             'pg_dump',
             '-h', self.connection.host,
             '-p', str(self.connection.port),
@@ -46,6 +52,11 @@ class _GzBackupStrategy(_BackupStrategy):
             '-f', backup_file_path,
             self.connection.database,
         ]
+
+        if self.docker_container:
+            command = ['docker', 'exec', '-it', self.docker_container] + command
+
+        return command
 
 
 class _SqlBackupStrategy(_BackupStrategy):
