@@ -2,7 +2,7 @@ from typing import Dict
 
 import boto3
 
-from transfer.by import FileSender
+from transfer.tools import FileSender
 
 
 class Boto3FileSender(FileSender):

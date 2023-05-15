@@ -1,8 +1,8 @@
 from typing import Dict, Any
 
-from transfer.by import FileSender
-from transfer.by.aws import Boto3FileSender
-from transfer.by.scp import ScpFileSender
+from transfer.tools import FileSender
+from transfer.tools.aws import Boto3FileSender
+from transfer.tools.scp import ScpFileSender
 
 
 class FileSenderFactory:
