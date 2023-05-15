@@ -1,13 +1,14 @@
 from connections.base import DBConnection
+from typing import Dict, Union
 
 
 class PostgresConnection(DBConnection):
-    def __init__(self, host: str, port: str, database: str, user: str, password: str):
-        self.host = host
-        self.port = port
-        self.database = database
-        self.user = user
-        self.password = password
+    def __init__(self, config: Dict[str, Union[str, int]]) -> None:
+        self.host: str = config['host']
+        self.port: int = config['port']
+        self.database: str = config['database']
+        self.user: str = config['user']
+        self.password: str = config['password']
 
     def connect(self):
         # Add your Postgres-specific connection logic here
