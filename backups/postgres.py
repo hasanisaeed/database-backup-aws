@@ -24,7 +24,12 @@ class PostgresBackup(DBBackup):
             raise ValueError("Invalid output format specified")
 
     def _execute_command(self, command: list) -> None:
-        subprocess.run(command, check=True)
+        env = self._setup_env_file()
+        subprocess.run(command, check=True, env=env)
+
+    def _setup_env_file(self) -> dict:
+        env = {'PGPASSWORD': self.connection.password}
+        return env
 
 
 class _BackupStrategy:
@@ -36,11 +41,8 @@ class _BackupStrategy:
 
 
 class _GzBackupStrategy(_BackupStrategy):
-    def __init__(self, connection: PostgresConnection, docker_container: str = 'postgres'):
+    def __init__(self, connection: PostgresConnection):
         super().__init__(connection)
-
-        if docker_container:
-            self.docker_container = docker_container
 
     def get_backup_command(self, backup_file_path: str) -> list:
         command = [
@@ -52,9 +54,6 @@ class _GzBackupStrategy(_BackupStrategy):
             '-f', backup_file_path,
             self.connection.database,
         ]
-
-        if self.docker_container:
-            command = ['docker', 'exec', '-it', self.docker_container] + command
 
         return command
 
