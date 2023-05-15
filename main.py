@@ -1,159 +1,35 @@
-import logging
-import argparse
+from config.postgres import POSTGRES_CONFIG
+from backups.postgres import PostgresBackup
+from connections.postgres import PostgresConnection
+from datetime import datetime
 import configparser
-import datetime
-import subprocess
-import gzip
-import os
-import boto3
-import json
+from typing import Dict, Union
 
-
-def upload_to_s3(file_full_path, dest_file, manager_config):
-    """
-    Upload a file to an MinIO S3 bucket.
-    """
-    session = boto3.session.Session()
-
-    # config connection requirements
-    s3_client = session.client(
-        service_name='s3',
-        aws_access_key_id=manager_config.get('AWS_KEY_ID'),
-        aws_secret_access_key=manager_config.get('AWS_ACCESS_KEY'),
-        endpoint_url=manager_config.get('AWS_ENDPOINT'),
-    )
-
-    try:
-        s3_client.upload_file(file_full_path,
-                              manager_config.get('AWS_BUCKET_NAME'),
-                              manager_config.get('AWS_BUCKET_PATH') + dest_file)
-        os.remove(file_full_path)
-    except boto3.exceptions.S3UploadFailedError as exc:
-        exit(1)
-
-
-def compress_to_gz(src_file):
-    gz_file = "%s.gz" % str(src_file)
-
-    with open(src_file, 'rb') as f_in:
-        with gzip.open(gz_file, 'wb') as f_out:
-            for line in f_in:
-                f_out.write(line)
-    return gz_file
-
-
-def backup_from_database(host, database_name, port, user, password, dest_file):
-    """
-    Backup from database
-    """
-    try:
-        process = subprocess.Popen(
-            [
-                'docker',
-                'exec',
-                '-it',
-                'stocks-db',
-                'pg_dump',
-                '--dbname=postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, database_name),
-                '-Fc',
-                '-f', dest_file,
-                '-v'],
-            stdout=subprocess.PIPE
-        )
-        output = process.communicate()[0]
-        if int(process.returncode) != 0:
-            exit(1)
-        return output
-    except Exception as e:
-        exit(1)
-
-
-def main():
-    # config logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    args_parser = argparse.ArgumentParser(description='Postgres database management')
-    args_parser.add_argument("--action",
-                             metavar="action",
-                             choices=['backup', 'restore'],
-                             required=True)
-
-    args_parser.add_argument("--configfile",
-                             required=True,
-                             help="Database configuration file")
-
-    args = args_parser.parse_args()
-
-    config = configparser.ConfigParser()
-    config.read(args.configfile)
-
-    project_name = config.get('Project', 'project_name')
-
-    backup_path = config.get('Project', 'backup_path')
-
-    postgres_host = config.get('postgresql', 'host')
-    postgres_port = config.get('postgresql', 'port')
-    postgres_dbs = json.loads(config.get('postgresql', 'db'))
-    postgres_users = json.loads(config.get('postgresql', 'user'))
-    postgres_passwords = json.loads(config.get('postgresql', 'password'))
-
-    assert len(postgres_dbs) == len(postgres_users) == len(postgres_passwords), \
-        'Length of databases and users and passwords must be the same.'
-
-    for i in range(len(postgres_dbs)):
-        timestr = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
-
-        postgres_db = postgres_dbs[i]
-        postgres_user = postgres_users[i]
-        postgres_password = postgres_passwords[i]
-
-        filename = '%s-backup-%s.dump' % (postgres_db, timestr)
-        filename_compressed = '%s.gz' % filename
-
-        aws_bucket_name = config.get('S3', 'bucket_name')
-        aws_key_id = config.get('S3', 'key_id')
-        aws_access_key = config.get('S3', 'access_key')
-        aws_endpoint = config.get('S3', 'endpoint')
-
-        manager_config = {
-            'AWS_BUCKET_NAME': aws_bucket_name,
-            'AWS_BUCKET_PATH': '%s/%s' % (project_name, postgres_db),
-            'BACKUP_PATH': backup_path,
-            'AWS_KEY_ID': aws_key_id,
-            'AWS_ACCESS_KEY': aws_access_key,
-            'AWS_ENDPOINT': aws_endpoint
-        }
-
-        local_file_path = '%s%s' % (manager_config.get('BACKUP_PATH'), filename)
-
-        logger.info('Backing up %s database to %s' % (
-            postgres_db,
-            local_file_path
-        ))
-
-        if args.action == "backup":
-            result = backup_from_database(
-                postgres_host,
-                postgres_db,
-                postgres_port,
-                postgres_user,
-                postgres_password,
-                local_file_path
-            )
-
-            comp_file = compress_to_gz(local_file_path)
-
-            logger.info('Uploading %s to MinIO S3...' % comp_file)
-
-            upload_to_s3(comp_file, filename_compressed, manager_config)
-
-            logger.info("Uploaded to %s" % filename_compressed)
-
+from transfer.factory import FileSenderFactory
+from transfer.tools import FileSender
 
 if __name__ == '__main__':
-    main()
+    # Create a PostgresConnection object using the configuration
+    connection = PostgresConnection(**POSTGRES_CONFIG)
+
+    # Create a PostgresBackup object
+    postgres = PostgresBackup(connection)
+
+    # Specify the backup file path and output format
+    output_format = "gz"  # or sql
+    backup_file_path = f"./backup_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}"
+
+    # Perform the backup
+    postgres.backup(backup_file_path, output_format)
+
+    sender_type: str = 'scp'  # or 'boto3'
+
+    config = configparser.ConfigParser()
+    config.read('config/transfer.ini')
+
+    if sender_type not in config.sections():
+        raise ValueError('Sender type not found in config.')
+
+    sender_config: Dict[str, Union[str, int]] = dict(config[sender_type])
+    file_sender: FileSender = FileSenderFactory.create_file_sender(sender_type, sender_config)
+    file_sender.send_file(backup_file_path)
