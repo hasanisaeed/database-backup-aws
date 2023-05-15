@@ -2,8 +2,10 @@
 .venv
 venv
 
-backup/*.dump
-backup/*.gz
+# Backup format
+*.gz
+*.sql
+
 *.pyc
 app.config
 
