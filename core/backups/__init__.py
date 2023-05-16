@@ -11,12 +11,3 @@ class BackupFactory:
 
     def create_backup(self) -> T:
         return self._db_backup_strategy()
-
-# if __name__ == '__main__':
-#     backup_factory = BackupFactory(PostgresBackup)
-#     backup = backup_factory.create_backup()
-#     backup.backup()
-#
-#     backup_factory = BackupFactory(MySQLBackup)
-#     backup = backup_factory.create_backup()
-#     backup.backup()
