@@ -1,6 +1,6 @@
 from typing import Type, TypeVar
 
-from base import DBBackup
+from databases.base import DBBackup
 
 T = TypeVar("T", bound=DBBackup)
 

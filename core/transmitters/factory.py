@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from hub import FileSender
+from hub.base import FileSender
 from hub.aws import Boto3FileSender
 from hub.scp import ScpFileSender
 
