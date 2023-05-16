@@ -4,11 +4,11 @@ from subprocess import CalledProcessError
 
 import configparser
 
-from backups.mysql import MySQLBackup
-from backups.postgres import PostgresBackup
 from connections.mysql import MySQLConnection
 from connections.postgres import PostgresConnection
-from core.exceptions.transmitters import SendingFileErrorException
+from backups.databases.mysql import MySQLBackup
+from backups.databases.postgres import PostgresBackup
+from exceptions.transmitters import SendingFileErrorException
 from transmitters.factory import FileSenderFactory
 
 
