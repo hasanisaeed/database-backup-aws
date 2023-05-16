@@ -1,13 +1,14 @@
 import argparse
-from subprocess import CalledProcessError
-from datetime import datetime
 import configparser
 
+from datetime import datetime
+from subprocess import CalledProcessError
 from backups.mysql import MySQLBackup
 from backups.postgres import PostgresBackup
 from connections.mysql import MySQLConnection
 from connections.postgres import PostgresConnection
-from transfer.factory import FileSenderFactory
+from core.exceptions.transmitters import SendingFileErrorException
+from transmitters.factory import FileSenderFactory
 
 
 def parse_arguments():
@@ -55,7 +56,7 @@ def send_backup(file_sender, backup_file_path):
     try:
         file_sender.send_file(backup_file_path)
     except CalledProcessError:
-        print("The file was not sent")
+        raise SendingFileErrorException(f"The file {backup_file_path} was not sent!")
 
 
 def remove_backup_file(backup_file_path):
