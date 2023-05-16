@@ -1,6 +1,6 @@
 import subprocess
 
-from base import DBBackup
+from . import DBBackup
 from ..connections.postgres import PostgresConnection
 
 
