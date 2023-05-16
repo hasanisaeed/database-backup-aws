@@ -1,8 +1,9 @@
 import argparse
-import configparser
-
 from datetime import datetime
 from subprocess import CalledProcessError
+
+import configparser
+
 from backups.mysql import MySQLBackup
 from backups.postgres import PostgresBackup
 from connections.mysql import MySQLConnection
