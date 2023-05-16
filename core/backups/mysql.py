@@ -1,5 +1,5 @@
-from backups import DBBackup
-from connections.mysql import MySQLConnection
+from . import DBBackup
+from ..connections.mysql import MySQLConnection
 
 
 class MySQLBackup(DBBackup):

@@ -1,4 +1,4 @@
-from transfer.tools import FileSender
+from . import FileSender
 import subprocess
 from typing import Dict, Union, List
 

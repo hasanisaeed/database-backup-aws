@@ -1,10 +1,8 @@
-from typing import Union, Dict
+from base import DBConnection
+from typing import Dict, Union
 
-from connections.base import DBConnection
 
-
-class MySQLConnection(DBConnection):
-
+class PostgresConnection(DBConnection):
     def __init__(self, config: Dict[str, Union[str, int]]) -> None:
         self.host: str = config['host']
         self.port: int = config['port']
@@ -13,6 +11,6 @@ class MySQLConnection(DBConnection):
         self.password: str = config['password']
 
     def connect(self):
-        # Add your MySQL-specific connection logic here
-        print("Connecting to MySQL database...")
-        # Example: return mysql.connector.connect(...)
+        # Add your Postgres-specific connection logic here
+        print("Connecting to Postgres database...")
+        # Example: return psycopg2.connect(...)
