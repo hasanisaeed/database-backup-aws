@@ -1,6 +1,7 @@
 from typing import Dict
 
 import boto3
+from boto3.exceptions import S3UploadFailedError
 
 from core.transmitters.hub.base import FileSender
 
@@ -18,4 +19,7 @@ class Boto3FileSender(FileSender):
             aws_secret_access_key=self.aws_secret_access_key
         )
         s3_client: boto3.client = session.client('s3')
-        s3_client.upload_file(file_path, self.aws_bucket_name, self.aws_destination_file_name)
+        try:
+            s3_client.upload_file(file_path, self.aws_bucket_name, self.aws_destination_file_name)
+        except S3UploadFailedError:
+            print("> Boto3 sending file error")
