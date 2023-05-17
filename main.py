@@ -19,7 +19,7 @@ def parse_arguments():
                         help='Specify the database type')
     parser.add_argument('--output-format', choices=['sql', 'gz'], required=True, help='Specify the output format')
     parser.add_argument('--send-via', choices=['scp', 'boto3'], required=True, help='Specify the send method')
-    parser.add_argument('--remove-after-sending', required=False,
+    parser.add_argument('--remove-after-sending', default="true", required=False,
                         help='Remove temp file after sending by scp or boto3')
 
     return parser.parse_args()
