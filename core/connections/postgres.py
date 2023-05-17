@@ -1,5 +1,6 @@
-from base import DBConnection
 from typing import Dict, Union
+
+from core.connections.base import DBConnection
 
 
 class PostgresConnection(DBConnection):

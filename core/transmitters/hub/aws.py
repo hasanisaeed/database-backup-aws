@@ -2,7 +2,7 @@ from typing import Dict
 
 import boto3
 
-from base import FileSender
+from core.transmitters.hub.base import FileSender
 
 
 class Boto3FileSender(FileSender):

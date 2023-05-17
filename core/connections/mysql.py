@@ -1,6 +1,6 @@
 from typing import Union, Dict
 
-from base import DBConnection
+from core.connections.base import DBConnection
 
 
 class MySQLConnection(DBConnection):

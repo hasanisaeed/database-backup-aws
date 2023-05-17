@@ -1,7 +1,7 @@
 import subprocess
 
-from base import DBBackup
-from ...connections.postgres import PostgresConnection
+from core.backups.databases.base import DBBackup
+from core.connections.postgres import PostgresConnection
 
 
 class PostgresBackup(DBBackup):

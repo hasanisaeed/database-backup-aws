@@ -1,6 +1,7 @@
-from . import FileSender
 import subprocess
 from typing import Dict, Union, List
+
+from core.transmitters.hub.base import FileSender
 
 
 class ScpFileSender(FileSender):

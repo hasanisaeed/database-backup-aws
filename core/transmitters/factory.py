@@ -1,8 +1,8 @@
 from typing import Dict, Any
 
-from hub.base import FileSender
-from hub.aws import Boto3FileSender
-from hub.scp import ScpFileSender
+from core.transmitters.hub.aws import Boto3FileSender
+from core.transmitters.hub.base import FileSender
+from core.transmitters.hub.scp import ScpFileSender
 
 
 class FileSenderFactory:
