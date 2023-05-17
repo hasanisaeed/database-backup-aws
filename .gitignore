@@ -1,6 +1,8 @@
 # Virtual Environment
 .venv
 venv
+# python 3.11 environment
+.venv3.11
 
 # Backup format
 *.gz
