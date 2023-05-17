@@ -4,12 +4,12 @@ from subprocess import CalledProcessError
 
 import configparser
 
-from connections.mysql import MySQLConnection
-from connections.postgres import PostgresConnection
-from backups.databases.mysql import MySQLBackup
-from backups.databases.postgres import PostgresBackup
-from exceptions.transmitters import SendingFileErrorException
-from transmitters.factory import FileSenderFactory
+from core.connections.mysql import MySQLConnection
+from core.connections.postgres import PostgresConnection
+from core.backups.databases.mysql import MySQLBackup
+from core.backups.databases.postgres import PostgresBackup
+from core.exceptions.transmitters import SendingFileErrorException
+from core.transmitters.factory import FileSenderFactory
 
 
 def parse_arguments():
