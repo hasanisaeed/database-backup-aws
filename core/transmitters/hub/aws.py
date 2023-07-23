@@ -5,6 +5,10 @@ from boto3.exceptions import S3UploadFailedError
 
 from core.transmitters.hub.base import FileSender
 
+from logger import LoggerSingleton
+
+logger = LoggerSingleton.get_logger()
+
 
 class Boto3FileSender(FileSender):
     def __init__(self, config: Dict[str, str]) -> None:
@@ -22,4 +26,4 @@ class Boto3FileSender(FileSender):
         try:
             s3_client.upload_file(file_path, self.aws_bucket_name, self.aws_destination_file_name)
         except S3UploadFailedError:
-            print(">> Boto3 sending file error")
+            logger.error(">> Boto3 sending file error")

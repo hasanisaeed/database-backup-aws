@@ -2,6 +2,10 @@ from typing import Union, Dict
 
 from core.connections.base import DBConnection
 
+from logger import LoggerSingleton
+
+logger = LoggerSingleton.get_logger()
+
 
 class MySQLConnection(DBConnection):
 
@@ -14,5 +18,5 @@ class MySQLConnection(DBConnection):
 
     def connect(self):
         # Add your MySQL-specific connection logic here
-        print(">> Connecting to MySQL database...")
+        logger.info(">> Connecting to MySQL database...")
         # Example: return mysql.connector.connect(...)

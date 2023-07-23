@@ -2,6 +2,10 @@ from typing import Dict, Union
 
 from core.connections.base import DBConnection
 
+from logger import LoggerSingleton
+
+logger = LoggerSingleton.get_logger()
+
 
 class PostgresConnection(DBConnection):
     def __init__(self, config: Dict[str, Union[str, int]]) -> None:
@@ -13,5 +17,5 @@ class PostgresConnection(DBConnection):
 
     def connect(self):
         # Add your Postgres-specific connection logic here
-        print(">> Connecting to Postgres database...")
+        logger.info(">> Connecting to Postgres database...")
         # Example: return psycopg2.connect(...)

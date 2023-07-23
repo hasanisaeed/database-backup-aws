@@ -3,6 +3,10 @@ import subprocess
 from core.backups.databases.base import DBBackup
 from core.connections.postgres import PostgresConnection
 
+from logger import LoggerSingleton
+
+logger = LoggerSingleton.get_logger()
+
 
 class PostgresBackup(DBBackup):
     def __init__(self, connection: PostgresConnection):
@@ -12,7 +16,7 @@ class PostgresBackup(DBBackup):
         backup_strategy = self._get_backup_strategy(output_format)
         command = backup_strategy.build_backup_command(backup_file_path)
         self._execute_command(command)
-        print(">> PostgreSQL database backup successful!")
+        logger.info(">> PostgreSQL database backup successful!")
 
     def _get_backup_strategy(self, output_format: str):
         if output_format == 'gz':

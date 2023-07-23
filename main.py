@@ -6,20 +6,20 @@ from subprocess import CalledProcessError
 import json
 import sched
 
-from logger import LoggerSingleton
-
 from core.connections.mysql import MySQLConnection
 from core.connections.postgres import PostgresConnection
 from core.backups.databases.mysql import MySQLBackup
 from core.backups.databases.postgres import PostgresBackup
 from core.transmitters.factory import FileSenderFactory
 
+from logger import LoggerSingleton
+
 logger = LoggerSingleton.get_logger()
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config-file', default='config.ini', required=False, help='Specify the config.ini file')
+    parser.add_argument('--config-file', default='config.json', required=False, help='Specify the config.ini file')
     parser.add_argument('--output-format', choices=['sql', 'gz'], required=True, help='Specify the output format')
     parser.add_argument('--backup-folder', default='./backups', required=False, help='Default backup folder')
     parser.add_argument('--send-via', choices=['scp', 'boto3'], required=True, help='Specify the send method')
@@ -71,7 +71,7 @@ def remove_backup_file(backup_file_path):
         os.remove(backup_file_path)
         logger.info(f">> Temp file '{backup_file_path}' deleted successfully.")
     except OSError as e:
-        logger.info(f">> Error deleting file '{backup_file_path}': {e}")
+        logger.error(f">> Error deleting file '{backup_file_path}': {e}")
 
 
 def main():
