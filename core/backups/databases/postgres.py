@@ -12,7 +12,7 @@ class PostgresBackup(DBBackup):
         backup_strategy = self._get_backup_strategy(output_format)
         command = backup_strategy.build_backup_command(backup_file_path)
         self._execute_command(command)
-        print("PostgreSQL database backup successful!")
+        print(">> PostgreSQL database backup successful!")
 
     def _get_backup_strategy(self, output_format: str):
         if output_format == 'gz':

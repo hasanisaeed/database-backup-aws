@@ -14,5 +14,5 @@ class MySQLConnection(DBConnection):
 
     def connect(self):
         # Add your MySQL-specific connection logic here
-        print("Connecting to MySQL database...")
+        print(">> Connecting to MySQL database...")
         # Example: return mysql.connector.connect(...)

@@ -22,4 +22,4 @@ class Boto3FileSender(FileSender):
         try:
             s3_client.upload_file(file_path, self.aws_bucket_name, self.aws_destination_file_name)
         except S3UploadFailedError:
-            print("> Boto3 sending file error")
+            print(">> Boto3 sending file error")

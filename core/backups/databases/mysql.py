@@ -7,4 +7,4 @@ class MySQLBackup(DBBackup):
         self.connection = connection
 
     def backup(self, backup_file_path: str, output_format: str) -> None:
-        print("Backing up MySQL database...")
+        print(">> Backing up MySQL database...")

@@ -13,5 +13,5 @@ class PostgresConnection(DBConnection):
 
     def connect(self):
         # Add your Postgres-specific connection logic here
-        print("Connecting to Postgres database...")
+        print(">> Connecting to Postgres database...")
         # Example: return psycopg2.connect(...)
