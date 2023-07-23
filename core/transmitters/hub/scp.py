@@ -10,13 +10,14 @@ class ScpFileSender(FileSender):
         self.port: int = config['port']
         self.username: str = config['username']
         self.password: str = config['password']
+        self.path: str = config.get('path', '/home') # default saved in home folder
 
     def _build_command(self, file_path: str) -> List[Union[str, int]]:
         return [
             'scp',
             '-P', str(self.port),
             file_path,
-            f'{self.username}@{self.host}:'
+            f'{self.username}@{self.host}:{self.path}'
         ]
 
     def _setup_env_file(self) -> Dict[str, str]:
