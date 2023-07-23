@@ -18,3 +18,6 @@ app.config
 # Ignore logs
 logs
 backups
+
+# ignore run script helper
+run_script.sh
