@@ -8,7 +8,9 @@ Automatic and adjustable backup of the database on AWS or anywhere else!
 
 #### Run script as a service:
 
-   bash installer.sh
+```bash
+bash installer.sh
+```
 
 To check the status of the service:
 
