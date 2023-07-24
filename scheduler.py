@@ -28,7 +28,7 @@ def parse_arguments():
     parser.add_argument('--send-via', choices=['scp', 'boto3'], required=True, help='Specify the send method')
     parser.add_argument('--interval', default="12h", required=False, help='Interval')
     parser.add_argument('--remove-after-sending', default="false", required=False,
-                        help='Remove temp file after sending by scp or boto3')
+                        help='Remove temp file after sending by transmitter')
 
     return parser.parse_args()
 
