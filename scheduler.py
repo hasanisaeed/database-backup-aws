@@ -27,7 +27,7 @@ def parse_arguments():
     parser.add_argument('--backup-folder', default='./backups', required=False, help='Default backup folder')
     parser.add_argument('--send-via', choices=['scp', 'boto3'], required=True, help='Specify the send method')
     parser.add_argument('--interval', default="12h", required=False, help='Interval')
-    parser.add_argument('--remove-after-sending', default="true", required=False,
+    parser.add_argument('--remove-after-sending', default="false", required=False,
                         help='Remove temp file after sending by scp or boto3')
 
     return parser.parse_args()
