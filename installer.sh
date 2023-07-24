@@ -43,7 +43,7 @@ echo -e "[Unit]\nDescription=Scheduler Service\nAfter=network.target\n" >schedul
 # shellcheck disable=SC2129
 echo -e "[Service]\nType=simple\nUser=$YOUR_USERNAME" >>scheduler.service
 echo -e "WorkingDirectory=$CURRENT_DIRECTORY" >>scheduler.service
-echo -e "ExecStart=/bin/bash -c './run_script.sh --config-file=config.json --output-format=gz --send-via=scp --interval=5m'" >>scheduler.service
+echo -e "ExecStart=/bin/bash -c './run_script.sh --config-file=config.json --output-format=gz --send-via=scp --interval=6h'" >>scheduler.service
 echo -e "Restart=always\n" >>scheduler.service
 echo -e "[Install]\nWantedBy=multi-user.target" >>scheduler.service
 echo -e "Alias=scheduler.service\n" >>scheduler.service # Add an Alias for easy access to the service
