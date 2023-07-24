@@ -27,7 +27,7 @@ cat <<'EOF' >run_script.sh
 source .venv/bin/activate
 
 # Run the Python script with command-line arguments
-python scheduler.py --config-file=config.json --output-format=gz --send-via=scp --remove-after-sending=false
+python scheduler.py --config-file=config.json --output-format=gz --send-via=scp
 
 # Deactivate the virtual environment
 deactivate
