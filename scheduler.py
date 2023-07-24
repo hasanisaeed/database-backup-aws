@@ -55,7 +55,7 @@ def get_backup(database, connection):
 
 
 def perform_backup(backup, backup_file_path, output_format):
-    backup.backup(backup_file_path, output_format)
+    return backup.backup(backup_file_path, output_format)
 
 
 def send_backup(file_sender, backup_file_path):
@@ -93,19 +93,20 @@ def main():
             os.makedirs(backup_folder)
         backup_file_path = os.path.join(backup_folder, f"backup_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}")
 
-        perform_backup(backup, backup_file_path, output_format)
+        backup_is_success = perform_backup(backup, backup_file_path, output_format)
 
-        sender_type = args.send_via
+        if backup_is_success:
+            sender_type = args.send_via
 
-        sender_config = config.get('transmitters')[sender_type]
-        file_sender = FileSenderFactory.create_file_sender(sender_type, sender_config)
+            sender_config = config.get('transmitters')[sender_type]
+            file_sender = FileSenderFactory.create_file_sender(sender_type, sender_config)
 
-        send_backup(file_sender, backup_file_path)
+            send_backup(file_sender, backup_file_path)
 
-        remove_after_sending = args.remove_after_sending.lower() == "true"
+            remove_after_sending = args.remove_after_sending.lower() == "true"
 
-        if remove_after_sending:
-            remove_backup_file(backup_file_path)
+            if remove_after_sending:
+                remove_backup_file(backup_file_path)
 
 
 def run_scheduler():
