@@ -11,8 +11,10 @@ printf "${BOLD}${CYAN}Enter your username (leave empty to use the current user):
 read -r YOUR_USERNAME
 YOUR_USERNAME=${YOUR_USERNAME:-$USER} # Use the current user if no username provided
 
-# Get the absolute path of the current folder and script name
+# Get the absolute path of the current folder
 CURRENT_DIRECTORY=$(pwd)
+
+# Change this name with your desired main module name
 SCRIPT_NAME="scheduler.py"
 
 printf "${BOLD}${CYAN}$SCRIPT_NAME${RESET} "
