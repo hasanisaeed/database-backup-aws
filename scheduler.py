@@ -13,8 +13,11 @@ from core.backups.databases.postgres import PostgresBackup
 from core.transmitters.factory import FileSenderFactory
 
 from logger import Logger
+from utils import convert_to_seconds
 
 logger = Logger.get_logger()
+
+PRIORITY = 1
 
 
 def parse_arguments():
@@ -110,10 +113,13 @@ def main():
 
 
 def run_scheduler():
+    args = parse_arguments()
     import time
     s = sched.scheduler(time.time, time.sleep)
     while True:
-        s.enter(5, 1, main, ())
+        interval = args.interval
+        delay = convert_to_seconds(interval)
+        s.enter(delay, PRIORITY, main, ())
         s.run()
 
 
