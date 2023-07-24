@@ -7,6 +7,7 @@ GREEN="\033[32m"
 CYAN="\033[36m"
 
 # Prompt the user for input
+# shellcheck disable=SC2059
 printf "${BOLD}${CYAN}Enter your username (leave empty to use the current user):${RESET} "
 read -r YOUR_USERNAME
 YOUR_USERNAME=${YOUR_USERNAME:-$USER} # Use the current user if no username provided
@@ -17,6 +18,7 @@ CURRENT_DIRECTORY=$(pwd)
 # Change this name with your desired main module name
 SCRIPT_NAME="scheduler.py"
 
+# shellcheck disable=SC2059
 printf "${BOLD}${CYAN}$SCRIPT_NAME${RESET} "
 
 # Create the helper script to run the Python script with arguments
@@ -38,6 +40,7 @@ chmod +x run_script.sh
 
 # Create the systemd service unit file
 echo -e "[Unit]\nDescription=Scheduler Service\nAfter=network.target\n" >scheduler.service
+# shellcheck disable=SC2129
 echo -e "[Service]\nType=simple\nUser=$YOUR_USERNAME" >>scheduler.service
 echo -e "WorkingDirectory=$CURRENT_DIRECTORY" >>scheduler.service
 echo -e "ExecStart=/bin/bash -c './run_script.sh --config-file=config.json --output-format=gz --send-via=scp --remove-after-sending=false'" >>scheduler.service
@@ -61,7 +64,7 @@ deactivate
 sudo systemctl enable scheduler
 sudo systemctl start scheduler
 
+# shellcheck disable=SC2059
 printf "${BOLD}${GREEN}\nService 'scheduler' has been started.${RESET}\n"
 
 sudo systemctl status scheduler.service
-
