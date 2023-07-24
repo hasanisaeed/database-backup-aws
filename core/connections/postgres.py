@@ -2,9 +2,9 @@ from typing import Dict, Union
 
 from core.connections.base import DBConnection
 
-from logger import LoggerSingleton
+from logger import Logger
 
-logger = LoggerSingleton.get_logger()
+logger = Logger.get_logger()
 
 
 class PostgresConnection(DBConnection):

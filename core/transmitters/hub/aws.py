@@ -5,9 +5,9 @@ from boto3.exceptions import S3UploadFailedError
 
 from core.transmitters.hub.base import FileSender
 
-from logger import LoggerSingleton
+from logger import Logger
 
-logger = LoggerSingleton.get_logger()
+logger = Logger.get_logger()
 
 
 class Boto3FileSender(FileSender):

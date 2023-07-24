@@ -1,9 +1,9 @@
 from core.backups.databases.base import DBBackup
 from core.connections.mysql import MySQLConnection
 
-from logger import LoggerSingleton
+from logger import Logger
 
-logger = LoggerSingleton.get_logger()
+logger = Logger.get_logger()
 
 
 class MySQLBackup(DBBackup):

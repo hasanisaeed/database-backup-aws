@@ -12,9 +12,9 @@ from core.backups.databases.mysql import MySQLBackup
 from core.backups.databases.postgres import PostgresBackup
 from core.transmitters.factory import FileSenderFactory
 
-from logger import LoggerSingleton
+from logger import Logger
 
-logger = LoggerSingleton.get_logger()
+logger = Logger.get_logger()
 
 
 def parse_arguments():

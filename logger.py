@@ -2,8 +2,10 @@ import logging
 import os
 
 
-class LoggerSingleton:
+class Logger:
     _logger_instance = None
+
+    # default path for logs.
     log_folder = 'logs'
 
     @classmethod

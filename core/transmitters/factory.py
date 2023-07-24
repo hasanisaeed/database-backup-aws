@@ -4,9 +4,9 @@ from core.transmitters.hub.aws import Boto3FileSender
 from core.transmitters.hub.base import FileSender
 from core.transmitters.hub.scp import ScpFileSender
 
-from logger import LoggerSingleton
+from logger import Logger
 
-logger = LoggerSingleton.get_logger()
+logger = Logger.get_logger()
 
 
 class FileSenderFactory:
