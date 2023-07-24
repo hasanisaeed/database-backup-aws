@@ -21,3 +21,6 @@ backups
 
 # ignore run script helper
 run_script.sh
+
+# environment variable
+config.json
