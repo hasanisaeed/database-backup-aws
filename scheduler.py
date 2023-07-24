@@ -94,7 +94,7 @@ def main():
 
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
-        backup_file_path = os.path.join(backup_folder, f"backup_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}")
+        backup_file_path = os.path.join(backup_folder, f"{db_config.get('database')}_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}")
 
         backup_is_success = perform_backup(backup, backup_file_path, output_format)
 
