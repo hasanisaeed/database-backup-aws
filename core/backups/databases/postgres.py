@@ -12,11 +12,10 @@ class PostgresBackup(DBBackup):
     def __init__(self, connection: PostgresConnection):
         self.connection = connection
 
-    def backup(self, backup_file_path: str, output_format: str = 'gz') -> None:
+    def backup(self, backup_file_path: str, output_format: str = 'gz') -> bool:
         backup_strategy = self._get_backup_strategy(output_format)
         command = backup_strategy.build_backup_command(backup_file_path)
-        self._execute_command(command)
-        logger.info(">> PostgreSQL database backup successful!")
+        return self._execute_command(command)
 
     def _get_backup_strategy(self, output_format: str):
         if output_format == 'gz':
@@ -24,11 +23,19 @@ class PostgresBackup(DBBackup):
         elif output_format == 'sql':
             return _SqlBackupStrategy(self.connection)
         else:
-            raise ValueError("Invalid output format specified")
+            logger.error(f">> Invalid output format ({output_format}) specified.")
+            raise ValueError(f">> Invalid output format ({output_format}) specified.")
 
-    def _execute_command(self, command: list) -> None:
+    def _execute_command(self, command: list) -> bool:
         env = self._setup_env_file()
-        subprocess.run(command, check=True, env=env)
+        try:
+            subprocess.run(command, check=True, env=env)
+        except subprocess.CalledProcessError:
+            logger.error(">> Connecting to the database failed.")
+            return False
+
+        logger.info(">> PostgreSQL database backup successful!")
+        return True
 
     def _setup_env_file(self) -> dict:
         env = {'PGPASSWORD': self.connection.password}
