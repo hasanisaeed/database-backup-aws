@@ -1,10 +1,10 @@
 import argparse
 import os
-
-from datetime import datetime
-from subprocess import CalledProcessError
 import json
 import sched
+import time
+from datetime import datetime
+from subprocess import CalledProcessError
 
 from core.connections.mysql import MySQLConnection
 from core.connections.postgres import PostgresConnection
@@ -16,7 +16,6 @@ from logger import Logger
 from utils import convert_to_seconds
 
 logger = Logger.get_logger()
-
 PRIORITY = 1
 
 
@@ -29,7 +28,6 @@ def parse_arguments():
     parser.add_argument('--interval', default="12h", required=False, help='Interval')
     parser.add_argument('--remove-after-sending', default="false", required=False,
                         help='Remove temp file after sending by transmitter')
-
     return parser.parse_args()
 
 
@@ -70,7 +68,6 @@ def send_backup(file_sender, backup_file_path):
 
 def remove_backup_file(backup_file_path):
     try:
-        import os
         os.remove(backup_file_path)
         logger.info(f">> Temp file '{backup_file_path}' deleted successfully.")
     except OSError as e:
@@ -85,43 +82,51 @@ def main():
     for db_config in databases:
         database_type = db_config.get('type')
         connection = get_connection(database_type, db_config)
-
         backup = get_backup(database_type, connection)
-
         output_format = args.output_format
-
         backup_folder = args.backup_folder
 
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
-        backup_file_path = os.path.join(backup_folder, f"{db_config.get('database')}_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}")
 
+        backup_file_path = os.path.join(backup_folder,
+                                        f"{db_config.get('database')}_{datetime.now():%a_%Y_%m_%d_%H%M%S}.{output_format}")
         backup_is_success = perform_backup(backup, backup_file_path, output_format)
 
         if backup_is_success:
             sender_type = args.send_via
-
             sender_config = config.get('transmitters')[sender_type]
             file_sender = FileSenderFactory.create_file_sender(sender_type, sender_config)
-
             send_backup(file_sender, backup_file_path)
 
             remove_after_sending = args.remove_after_sending.lower() == "true"
-
             if remove_after_sending:
                 remove_backup_file(backup_file_path)
 
+    logger.info(f"Backup and send process completed for {db_config.get('database')}.")
 
-def run_scheduler():
+
+def run_and_reschedule(scheduler, delay):
+    try:
+        main()
+    except Exception as e:
+        logger.error(f"An error occurred during the main execution: {e}")
+    finally:
+        scheduler.enter(delay, PRIORITY, run_and_reschedule, (scheduler, delay))
+        logger.info(f"Next run scheduled in {delay} seconds.")
+
+
+def start_scheduler():
     args = parse_arguments()
-    import time
     s = sched.scheduler(time.time, time.sleep)
-    while True:
-        interval = args.interval
-        delay = convert_to_seconds(interval)
-        s.enter(delay, PRIORITY, main, ())
-        s.run()
+
+    interval = args.interval
+    delay = convert_to_seconds(interval)
+
+    logger.info("Scheduler starting. First run will be immediate.")
+    s.enter(0, PRIORITY, run_and_reschedule, (s, delay))
+    s.run()
 
 
 if __name__ == '__main__':
-    run_scheduler()
+    start_scheduler()
