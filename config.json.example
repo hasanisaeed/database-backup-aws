@@ -17,8 +17,9 @@
   "databases": [
     {
       "type": "postgres",
+      "container_name": "nejat125-db",
       "host": "localhost",
-      "port": "5432",
+      "port": 5433,
       "database": "postgres",
       "user": "test",
       "password": "123456"
